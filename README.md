@@ -1,9 +1,8 @@
 # Phantom
 
-
 <div align="center">
 
-*An integrated system for building a unified, queryable personal knowledge graph and semantic exploration engine.*
+*An open-source initiative to build a deeply interconnected, queryable digital canon of human art and thought.*
 
 </div>
 
@@ -11,18 +10,21 @@
 <div align="center">───────  §  ───────</div>
 <br/>
 
+## Vision & Motivation: Curating a Digital Canon
 
-## Vision & Motivation
+In an age awash with ephemeral content and algorithmic noise, Phantom seeks to carve out a space for enduring works of human creativity and intellect. We face a deluge of information, the fragmentation of cultural memory, and the rise of "AI slop"—content endlessly remixed without grounding in original substance. It's increasingly difficult to connect with the foundational art, literature, and ideas that shape our understanding of ourselves and the world.
 
-Phantom is an ambitious project designed to transform a massive personal library (books, articles, notes, images, media) into a cohesive, interconnected knowledge graph. It moves beyond simple file storage or isolated databases, aiming to create a "digital brain", a semantically rich, queryable representation of collected information.
+Phantom is our response: an ambitious project to build an **open-source, canonical library**. We are not aiming to catalog *everything*, but rather to meticulously curate a collection of significant works – the touchstones of art, literature, philosophy, and science – and transform them into a unified, deeply interconnected knowledge graph.
 
-This project stems from the desire to:
+Our core motivations are:
 
-- **Catalog Deeply:** Go beyond basic metadata to capture complex relationships, thematic connections, and personal annotations across various media types.
-- **Ingest Seamlessly:** Process and structure information from diverse sources, including challenging formats like scanned PDFs.
-- **Explore Semantically:** Enable searching and discovery based on meaning and context, not just keywords.
-- **Interact Naturally:** Facilitate querying and interaction using natural language.
-- **Build a Foundation:** Create a robust, extensible platform for future analysis, visualization, and creative exploration.
+-   **Combat Information Overload:** Provide a focused, high-signal resource amidst the noise, prioritizing depth and significance over sheer volume.
+-   **Preserve & Rediscover:** Create a persistent, accessible digital home for canonical works, safeguarding them against cultural amnesia and making them newly discoverable.
+-   **Enable Deep Exploration:** Move beyond keyword search. Allow users to explore the semantic relationships, thematic resonances, and intricate connections *between* works across different domains and eras.
+-   **Foster Meaningful Analysis:** Build a structured, vectorized representation of the canon, enabling novel forms of computational analysis, visualization, and understanding.
+-   **Offer an Open Resource:** Provide this curated and structured knowledge base as an open-source platform for researchers, students, artists, and the intellectually curious public.
+
+Phantom aims to be more than a digital archive; it aspires to be a dynamic engine for exploring the heights of human expression and thought.
 
 <br/>
 <div align="center">───────  §  ───────</div>
@@ -30,7 +32,7 @@ This project stems from the desire to:
 
 ## High-Level Architecture
 
-The Phantom Suite employs a microservices-based architecture, where distinct components handle specific stages of the knowledge pipeline. Data flows from ingestion and structuring through semantic indexing to various interaction interfaces.
+Phantom employs a modular, service-oriented architecture to manage the lifecycle of canonical data, from ingestion and structuring to enrichment, storage, and exploration.
 
 ```mermaid
 %%{
@@ -47,60 +49,73 @@ The Phantom Suite employs a microservices-based architecture, where distinct com
  }
 }%%
 graph LR
-classDef sources fill:#d86e45,stroke:#d86e45,color:#fff
-classDef processing fill:#6e54bc,stroke:#6e54bc,color:#fff
-classDef storage fill:#2a7b9b,stroke:#2a7b9b,color:#fff
-classDef api fill:#45ad8f,stroke:#45ad8f,color:#fff
+    classDef sources fill:#d86e45,stroke:#d86e45,color:#fff
+    classDef processing fill:#6e54bc,stroke:#6e54bc,color:#fff
+    classDef storage fill:#2a7b9b,stroke:#2a7b9b,color:#fff
+    classDef api fill:#45ad8f,stroke:#45ad8f,color:#fff
+    classDef frontend fill:#f9a03f,stroke:#f9a03f,color:#fff
+    classDef analysis fill:#c7b8ea,stroke:#c7b8ea,color:#333
+    classDef definition fill:#a0a0a0,stroke:#a0a0a0,color:#333
 
-%% Data Sources
-subgraph Input_Sources["Input Sources"]
-    A[Documents / PDFs]:::sources
-    B[Manual Entry / Art Data]:::sources
-    C[Other Media Info]:::sources
-end
+    subgraph Input_Layer["Input & Definition"]
+        A["Source Materials (Docs, Data)"]:::sources
+        B[phantom-canon Definition]:::definition
+    end
 
-%% Core Pipeline
-subgraph Core_Pipeline["Core Pipeline"]
-    D[phantom-folio]:::processing
-    F[(PostgreSQL)]:::storage
-    E[phantom-vector]:::processing
-    H[(Qdrant)]:::storage
-    G[phantom-editor API]:::api
-end
+    subgraph Processing_Pipeline["Processing Pipeline"]
+        C[phantom-intake]:::processing
+        D[phantom-folio]:::processing
+        E[phantom-enrichment]:::processing
+    end
 
-%% Interaction Layer
-subgraph Interaction_Layer["Interaction Layer"]
-    I[phantom-agent]:::api
-    J{LLM}:::processing
-    K[phantom-explorer]:::api
-    L[phantom-klänge]:::api
-    M[User]
-end
+    subgraph Storage_Layer["Storage Layer"]
+        F[(phantom-db / PostgreSQL)]:::storage
+        G[(phantom-vector / Qdrant)]:::storage
+    end
 
-%% Connections
-A --> D
-B --> G
-C --> G
-D -- Structured EPUBs/Text --> E
-F -- Master Metadata --> D
-F -- Master Metadata --> E
-G -- Creates/Updates --> F
-E -- Embeddings + Metadata --> H
-F -- IDs / Links --> E
-I -- Queries / Context --> H
-I -- LLM Interaction --> J
-K -- Browses / Visualizes --> F
-K -- Semantic Queries --> I
-L -- Reads Content --> F
-M -- Edits via --> G
-M -- Queries via --> I
-M -- Explores via --> K
-M -- Reads --> L
+    subgraph API_Layer["API & Query Layer"]
+        H[phantom-api]:::api
+        I[phantom-query]:::api
+    end
+
+    subgraph Interaction_Layer["Interaction & Analysis"]
+        J[phantom-editor]:::frontend
+        K[phantom-explorer]:::frontend
+        L[phantom-eda]:::analysis
+        M[User]
+    end
+
+    %% Connections
+    A --> C
+    B -- Defines Scope --> C
+    C -- Raw Data --> D
+    D -- Processed Content --> E
+    E -- Enriched Data --> F
+    E -- Enriched Data --> G
+    H -- CRUD Ops --> F
+    H -- Manages --> E
+    H -- Manages --> D
+    H -- Manages --> C
+    I -- Vector Queries --> G
+    H -- Delegates Vector Search --> I
+    J -- Edits via --> H
+    K -- Explores via --> H
+    K -- Explores via --> I
+    L -- Analyzes --> H
+    L -- Analyzes --> F
+    L -- Analyzes --> G
+    M -- Curates --> B
+    M -- Uses --> J
+    M -- Uses --> K
+    M -- Uses --> L
 ```
 
-- **Core Data:** phantom-db acts as the central registry and relational store. phantom-vector (with Qdrant) provides the semantic index.
-- **Ingestion:** phantom-folio handles document processing. phantom-editor allows structured data entry/modification.
-- **Interaction:** phantom-agent enables LLM-based querying. phantom-explorer provides a visual interface. phantom-klänge powers external blog outputs.
+
+-   **Definition:** `phantom-canon` outlines *what* belongs in the library.
+-   **Ingestion & Processing:** `phantom-intake` captures raw source material, `phantom-folio` converts formats (e.g., PDF to structured text), and `phantom-enrichment` adds metadata and connections.
+-   **Core Storage:** `phantom-db` (PostgreSQL) stores structured metadata and relationships. `phantom-vector` (with Qdrant) stores semantic vector embeddings for similarity search.
+-   **Access & Interaction:** `phantom-api` serves as the central gateway for data management and retrieval. `phantom-query` specializes in handling vector search requests.
+-   **User Interfaces & Analysis:** `phantom-editor` allows curation and data modification. `phantom-explorer` provides the interface for browsing and discovering connections. `phantom-eda` contains tools and notebooks for deeper analysis.
 
 <br/>
 <div align="center">───────  §  ───────</div>
@@ -108,18 +123,37 @@ M -- Reads --> L
 
 ## Phantom Projects Overview
 
-The suite is composed of the following services, each residing in its own repository:
+The suite is composed of the following services and repositories, organized logically by function:
 <br/>
 
-| Project | Description | Technologies | Status |
-|---------|-------------|--------------|--------|
-| [**phantom-db**](https://github.com/Phantomklange/phantom-db) | PostgreSQL knowledge graph for complex art/media metadata. | PostgreSQL, SQLAlchemy, Alembic, Python | Active |
-| [**phantom-folio**](https://github.com/Phantomklange/phantom-folio) | Document ingestion pipeline (PDF/OCR → EPUB) via Dockerized FastAPI/Celery. | FastAPI, Docker, Celery, PyTesseract, Python | Active |
-| [**phantom-vector**](https://github.com/Phantomklange/phantom-vector) | Semantic indexing engine using Sentence Transformers & Qdrant vector DB. | PyTorch, Sentence Transformers, Qdrant, CUDA, Python | Active |
-| [**phantom-editor**](https://github.com/Phantomklange/phantom-editor) | Web interface or API service for managing content within phantom-db. | FastAPI/Python, (Potential: React/Vue/HTMX) | Planned |
-| [**phantom-agent**](https://github.com/Phantomklange/phantom-agent) | RAG-based LLM interface for natural language interaction with indexed content. | LangChain, LLMs, Transformers, Python | Planned |
-| [**phantom-explorer**](https://github.com/Phantomklange/phantom-explorer) | Front-end application for browsing, exploring, and visualizing the knowledge suite. | React, TypeScript, D3.js, Tailwind CSS | Planned |
-| [**phantom-klänge**](https://github.com/Phantomklange/phantom-klange) | Hugo theme framework for blogs powered by phantom-db data. | Hugo, Go Templates, HTML/CSS/JS, GitHub Actions | Active |
+| Project                                                                             | Description                                                                                               | Technologies        |
+| :-------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- | :----------------------------------- |
+| [****phantom****][1] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Central entry point, documentation hub, and orchestration layer.                                          | Docker Compose, Markdown, NixOS      |
+| [****phantom-canon****][2] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Consolidation and definition of the human canon criteria and sources.                                     | Python, Markdown, Git, YAML          |
+| [****phantom-intake****][3] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Ingestion platform for acquiring and initially processing source materials.                                 | Python, Apache Airflow, S3, Docker   |
+| [****phantom-folio****][4] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Document conversion pipeline (e.g., PDF/OCR → Structured Text/EPUB).                                      | Python, FastAPI, Celery, Tesseract   |
+| [****phantom-enrichment****][5] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Engine for adding metadata, linking entities, and enriching content.                                  | Jupyter, spaCy, NLTK, Python         |
+| [****phantom-db****][6] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Robust relational database system (PostgreSQL) storing structured metadata.                               | PostgreSQL, SQLAlchemy, Alembic, Py  |
+| [****phantom-vector****][7] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Vectorization engine creating embeddings using models like Sentence Transformers.                           | PyTorch, Sent. Transformers, Qdrant  |
+| [****phantom-api****][8] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Central API gateway for interacting with all backend Phantom services.                                      | FastAPI, Python, JWT, OpenAPI        |
+| [****phantom-query****][9] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Specialized service for executing vector similarity searches against Qdrant.                                | Python, FastAPI, LangChain, Redis    |
+| [****phantom-editor****][10] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Web application for curators to manage, edit, and annotate canon content.                                   | React, TypeScript, Draft.js, Tailwind|
+| [****phantom-explorer****][11] <br/> ![Status](https://img.shields.io/badge/Status-Planned-ed8936?style=flat-square) | Web application for users to browse, search, and visualize the canon.                                     | React, TypeScript, D3.js, Tailwind   |
+| [****phantom-eda****][12] <br/> ![Status](https://img.shields.io/badge/Status-Active-38b2ac?style=flat-square) | Repository for exploratory data analysis, experiments, and visualizations related to the canon data.        | Jupyter, Pandas, NumPy, Matplotlib   |
+
+<!-- Repository Links -->
+[1]: https://github.com/Phantomklange/phantom
+[2]: https://github.com/Phantomklange/phantom-canon
+[3]: https://github.com/Phantomklange/phantom-intake
+[4]: https://github.com/Phantomklange/phantom-folio
+[5]: https://github.com/Phantomklange/phantom-enrichment
+[6]: https://github.com/Phantomklange/phantom-db
+[7]: https://github.com/Phantomklange/phantom-vector
+[8]: https://github.com/Phantomklange/phantom-api
+[9]: https://github.com/Phantomklange/phantom-query
+[10]: https://github.com/Phantomklange/phantom-editor
+[11]: https://github.com/Phantomklange/phantom-explorer
+[12]: https://github.com/Phantomklange/phantom-eda
 
 <br/>
 <div align="center">───────  §  ───────</div>
@@ -127,12 +161,12 @@ The suite is composed of the following services, each residing in its own reposi
 
 ## This Repository (`Phantomklange/phantom`)
 
-This repository serves as the **central entry point, documentation hub, and orchestration layer** for the entire Phantom Suite. It **does not contain the core source code** for the individual components listed above.
+This repository serves as the **central entry point, documentation hub, and orchestration layer** for the entire Phantom Suite. It **does not contain the core source code** for the individual components listed above but integrates them.
 
 Its primary contents are:
 
-- **Documentation:** This `README`, architectural details, design rationale (`docs/`).
-- **Orchestration:** `docker-compose.yml` and related files (`*.env.example`) for setting up and running the entire suite locally.
+-   **Documentation:** This `README`, architectural details, design rationale (`docs/`).
+-   **Orchestration:** `docker-compose.yml` and related configuration (`*.env.example`) for setting up and running the suite locally. Often leverages Nix Flakes for reproducibility.
 
 <br/>
 <div align="center">───────  §  ───────</div>
@@ -147,47 +181,63 @@ These instructions outline how to run the core components of the Phantom Suite l
 *   Git
 *   Docker Engine
 *   Docker Compose
-*   Sufficient RAM/Disk (See component requirements, especially for Qdrant/Embeddings)
+*   (Optional) Nix package manager if leveraging Nix Flakes defined in this or other repos.
+*   Sufficient RAM/Disk (Check requirements for PostgreSQL, Qdrant, and embedding models)
 *   (Optional but Recommended) NVIDIA GPU with NVIDIA Container Toolkit for `phantom-vector` acceleration.
 
 **Steps:**
 
-1.  **Clone Repositories:** Clone this `phantom` repository and all necessary component repositories (e.g., `phantom-db`, `phantom-folio`, `phantom-vector`) into a common parent directory structure expected by the `docker-compose.yml` file (modify paths in Compose file if needed).
+1.  **Clone Repositories:** Clone this `phantom` repository and the necessary component repositories into a common parent directory. Adjust paths in `docker-compose.yml` if your structure differs.
+
     ```bash
     # Example Structure:
     # phantom-suite/
     # ├── phantom/ (This repo)
+    # ├── phantom-api/
+    # ├── phantom-canon/
     # ├── phantom-db/
+    # ├── phantom-eda/
+    # ├── phantom-editor/
+    # ├── phantom-enrichment/
+    # ├── phantom-explorer/
     # ├── phantom-folio/
+    # ├── phantom-intake/
+    # ├── phantom-query/
     # └── phantom-vector/
-    # ... etc
 
     git clone https://github.com/Phantomklange/phantom.git
-    git clone https://github.com/Phantomklange/phantom-db.git
+    git clone https://github.com/Phantomklange/phantom-canon.git
+    git clone https://github.com/Phantomklange/phantom-intake.git
+    git clone https://github.com/Phantomklange/phantom-folio.git
     # ... clone other required repos ...
     cd phantom # Navigate into this repository
     ```
 
-2.  **Configure Environment:** Copy and populate the necessary `.env` files based on `.env.example` within this repository (for Compose) and potentially within individual component repos if they require specific build-time secrets not passed by Compose.
+2.  **Configure Environment:** Copy `.env.example` to `.env` in this repository and populate it with your configuration (database credentials, API keys, service URLs, etc.). Check individual component repositories for any additional required environment variables or setup (including potential Nix configuration).
     ```bash
     cp .env.example .env
-    # Edit .env with your database passwords, API keys, etc.
+    # Edit .env with your specific settings
     ```
 
 3.  **Build & Run Services:**
     ```bash
+    # If using plain Docker Compose
     docker-compose up --build -d
-    ```
-    *   This command will build the images for each service (using their respective Dockerfiles) and start the containers defined in `docker-compose.yml`.
-    *   Use `docker-compose logs -f <service_name>` (e.g., `docker-compose logs -f phantom-folio-api`) to view logs.
 
-4.  **Database Initialization:** You may need to run initial database migrations for `phantom-db` after the PostgreSQL container is up. This might involve exec'ing into the `phantom-db` container or running a command defined in the Compose file. (Refer to `phantom-db` README for specifics).
+    # If leveraging Nix Flakes for building/running (example, adapt as needed)
+    # nix develop --command docker-compose up --build -d
+    ```
+    *   This builds and starts the containers defined in `docker-compose.yml`.
+    *   Use `docker-compose logs -f <service_name>` (e.g., `docker-compose logs -f phantom-api`) to monitor logs.
+    *   *Note:* The default `docker-compose.yml` may only include core services. You might need to customize it to run optional components like front-ends.
+
+4.  **Database Initialization:** After the PostgreSQL container (`phantom-db`) is running, you'll likely need to apply database migrations. Refer to the `phantom-db` repository's documentation for the specific commands (often involving `alembic`).
     ```bash
     # Example command (adjust based on actual setup):
     # docker-compose exec phantom-db alembic upgrade head
     ```
 
-5.  **Access Services:** Refer to the `docker-compose.yml` file and individual component documentation to find the exposed ports and access points for APIs (e.g., `phantom-folio` API, `phantom-editor` UI) or databases (e.g., PostgreSQL, Qdrant UI).
+5.  **Access Services:** Consult `docker-compose.yml` and individual project READMEs to find the exposed ports for APIs (`phantom-api`, `phantom-query`), UIs (`phantom-editor`, `phantom-explorer`), or database tools (e.g., Qdrant UI, Adminer/pgAdmin for PostgreSQL). The primary interaction point will likely be `phantom-api`.
 
 **Stopping Services:**
 
@@ -203,16 +253,17 @@ docker-compose down
 
 ## Future Considerations & Roadmap
 
-- Implementation of planned components (`phantom-editor`, `phantom-agent`, `phantom-explorer`).
-- Expansion to other media types (images, music, film).
-- Refinement of data models and relationships.
-- Development of advanced querying and visualization features.
-- Performance optimization and scaling strategies.
-- Enhanced error handling and monitoring across services.
+-   Formalizing the `phantom-canon` definition and curation process.
+-   Full implementation and integration of `phantom-intake`, `phantom-enrichment`, `phantom-api`, and `phantom-query`.
+-   Development of the `phantom-editor` and `phantom-explorer` user interfaces.
+-   Refinement of data models, vectorization strategies, and cross-linking algorithms.
+-   Exploration of advanced analysis techniques within `phantom-eda`.
+-   Performance optimization, scalability testing, and robust monitoring.
+-   Building a community around the open-source canon.
 
 <br/>
 
 ---
 
-*This project is actively under development.*
+*This project is actively under development, driven by a passion for preserving and exploring the core of human artistic and intellectual achievement.*
 *Contact: [Pablo Aguirre](mailto:pablo.aguirre@phantomklange.com)*
